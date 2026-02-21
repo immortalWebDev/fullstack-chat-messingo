@@ -28,25 +28,28 @@ io.on("connection", (socket) => {
  socket.on("register", (username) => {
   if (!username) return;
 
+  const normalizedUsername = username.toLowerCase();
+
   // Check if username already taken
-  if (users[username]) {
+  if (users[normalizedUsername]) {
     socket.emit("username_error", "Username already taken");
     return;
   }
 
   // Save username
-  users[username] = socket.id;
-  socket.username = username;
+  users[normalizedUsername] = socket.id;
+  socket.username = normalizedUsername;
+  socket.displayName = username
 
   socket.emit("register_success");
 });
 
   socket.on("private_message", ({ to, sender, text }) => {
     if (!to || !text) return;
-    const targetSocket = users[to];
+    const targetSocket = users[to.toLowerCase()];
 
     const messageData = {
-      sender: socket.username,
+      sender: socket.displayName,
       text,
       createdAt: new Date().toISOString(),
     };
