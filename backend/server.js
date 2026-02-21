@@ -25,13 +25,21 @@ io.on("connection", (socket) => {
   console.log("New connection:", socket.id);
 
   // Register username
-  socket.on("register", (username) => {
-    if (!username) return;
-    socket.username = username;
+ socket.on("register", (username) => {
+  if (!username) return;
 
-    users[username] = socket.id;
-    // console.log("Users:", users);
-  });
+  // Check if username already taken
+  if (users[username]) {
+    socket.emit("username_error", "Username already taken");
+    return;
+  }
+
+  // Save username
+  users[username] = socket.id;
+  socket.username = username;
+
+  socket.emit("register_success");
+});
 
   socket.on("private_message", ({ to, sender, text }) => {
     if (!to || !text) return;
