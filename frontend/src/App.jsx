@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import "./App.css";
 
-// const socket = io("https://fullstack-chat-messingo-production.up.railway.app");
 const socket = io(
   "https://fullstack-chat-messingo-production.up.railway.app",
   {
@@ -17,6 +16,7 @@ function App() {
   const [toUser, setToUser] = useState("");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  
 
   const chatRef = useRef(null);
 
@@ -49,7 +49,6 @@ function App() {
 
     socket.emit("private_message", {
       to: toUser,
-      sender: username,
       text: message,
     });
 
@@ -97,8 +96,10 @@ function App() {
                   msg.sender === username ? "sent" : "received"
                 }`}
               >
-                <div>{msg.text}</div>
+                <strong>{msg.text}</strong>
+                <div className="time">from: {msg.sender}</div>
                 <div className="time">{time}</div>
+                
               </div>
             );
           })}

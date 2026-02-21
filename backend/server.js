@@ -10,7 +10,11 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5175", "http://localhost:5174","https://fullstack-chat-messingo.vercel.app"],
+    origin: [
+      "http://localhost:5175",
+      "http://localhost:5174",
+      "https://fullstack-chat-messingo.vercel.app",
+    ],
     credentials: true,
   },
 });
@@ -22,30 +26,29 @@ io.on("connection", (socket) => {
 
   // Register username
   socket.on("register", (username) => {
+    if (!username) return;
+    socket.username = username;
+
     users[username] = socket.id;
-    console.log("Users:", users);
+    // console.log("Users:", users);
   });
 
+  socket.on("private_message", ({ to, sender, text }) => {
+    if (!to || !text) return;
+    const targetSocket = users[to];
 
-
-socket.on("private_message", ({ to, sender, text }) => {
-    if (!to || !sender || !text) return;
-  const targetSocket = users[to];
-
-  const messageData = {
-    sender,
-    text,
+    const messageData = {
+      sender: socket.username,
+      text,
       createdAt: new Date().toISOString(),
+    };
 
+    if (targetSocket) {
+      io.to(targetSocket).emit("receive_message", messageData);
+    }
 
-  };
-
-  if (targetSocket) {
-    io.to(targetSocket).emit("receive_message", messageData);
-  }
-
-  socket.emit("receive_message", messageData);
-});
+    socket.emit("receive_message", messageData);
+  });
   socket.on("disconnect", () => {
     // Remove disconnected user
     for (let username in users) {
